@@ -1,0 +1,214 @@
+//按键精灵模拟点击脚本
+KeyPress "home"
+
+//模拟器中已安装要刷的所有包
+Dim packageArray = Array("com.test","com.test","com.test","com.test","com.test","com.test","com.test")
+
+
+TracePrint "---------------- start ------------------"
+
+//总共要刷的包的数量
+Dim pkgTotal = 2
+//展示总的广告数量（偶数为bd，奇数为qq）
+Dim adTotal = 20
+//bd要刷数量 qq
+Dim bd = 3, qq = 3
+
+// max 数组最大下标
+// r 随机生成一个 [0,max] 的值
+Dim r, max 
+max = UBound(packageArray)
+Randomize
+r = Int((max - 0 + 1) * Rnd() + 0)
+TracePrint "kArray:" & max &"*"& r
+
+//清除所有包的缓存
+For i = 0 To max
+    TracePrint "pkg:" & packageArray(i)
+    Sys.ClearAppCache packageArray(i)
+Next
+
+//删除 广告sdk 生成的文件夹
+deleteFolders(packageArray)
+
+
+
+
+//运行次数
+Dim run = 0
+//点击次数
+Dim click = 0
+
+
+While 0 = 0
+ run = run + 1 
+ Dim pkg = packageArray(getVal(r + run Mod pkgTotal, max))
+ TracePrint pkg
+ click = click + justDoIt(pkg,adTotal,bd,qq)
+
+ ShowMessage "启动" & run & "次  点击" & click & "次"
+  
+ Delay 5000
+Wend
+
+// 获取数组的循环下标     
+//  max = 6
+//  num = 6   return 6
+//  num = 7   return 0
+//  num = 8   return 1
+//  num = 9   return 2
+//  num =10   return 3
+//  num =11   return 4
+//  num =12
+Function getVal(num,  max)
+	If num > max Then 
+		getVal = num - max -1
+	Else 
+	 getVal = num
+	End If
+End Function
+
+
+//随机点击广告
+Function justDoIt(pkg, adTotal, bd, qq)
+	
+	// t1 延迟点击的时间； t2 延迟返回的时间
+    Dim t1,t2
+	
+	//启动app
+	RunApp pkg
+	
+	// 随机延迟一个时间 8-10s 点击
+    // 安智 10 - 15s    百度 8 - 10s 	
+	
+	t1 = 10
+	TracePrint "延迟" & t1 & "s后点击" 
+	Delay t1 * 1000
+		
+	//点击banner广告	
+	Call clickBannerAd(adTotal, bd, qq)
+
+		
+	
+	t2 = 10
+	TracePrint "延迟" & t2 & "s后按返回键"
+	Delay t2 * 1000
+	KeyPress "back"
+	
+	Delay 2000
+	
+	KillApp pkg
+	TracePrint "关闭应用"
+	KeyPress "home"
+	
+	//函数执行1次 回调1
+	justDoIt = 1
+End Function
+
+//点击interstitial广告
+Function clickInterstitialAd()
+	Dim x,y,r
+	x = GetScreenX()
+	y = GetScreenY()
+	
+	// 随机 [1,5]
+	Randomize	
+	r = Int((5 - 1 + 1) * Rnd() + 1)
+	// 全屏点击概率 20%
+	If r = 2 Then 
+	   TracePrint "Click Interstitial Ad"
+	   Tap x/2, y/2+100
+	End If
+End Function
+
+//点击banner广告  bd 偶数位  qq 奇数位
+Function clickBannerAd(adTotal, bd, qq)
+	Dim x,y
+	x = GetScreenX()
+	y = GetScreenY()
+	
+	TracePrint "屏幕分辨率" & x & "*" & y	
+	
+	// 每种广告数组最大下标
+	Dim singleMax	
+	singleMax = (adTotal / 2) - 1
+	Dim adHeight
+	adHeight = y/adTotal
+	
+    // 随机 一个 r  [0, adTotal/2 -1]
+    Dim rbd,rqq
+    Randomize
+	rbd = Int((singleMax - 0 + 1) * Rnd() + 0)
+	rqq = Int((singleMax - 0 + 1) * Rnd() + 0)
+	TracePrint "rbd:" & rbd & "; rqq:" & rqq	
+	
+	For i = 0 To bd-1
+    	TracePrint "bd:" & getVal(rbd + i, singleMax)
+    	TracePrint "tap bd:"& (2 * getVal(rbd + i, singleMax) + 0.5 ) * adHeight
+    	Tap x/2, (2 * getVal(rbd + i, singleMax) + 0.5 ) * adHeight
+	Next
+	
+	For j = 0 To qq-1
+    	TracePrint "qq:" & getVal(rqq + j, singleMax)
+    	TracePrint "tap qq:"& (2 * getVal(rqq + j, singleMax) + 1.5 ) * adHeight
+    	Tap x/2, (2 * getVal(rqq + j, singleMax) + 1.5 ) * adHeight
+	Next
+	
+    	
+End Function
+
+Function deleteFolders(arr)
+
+	TracePrint " Delete  folder"
+	
+	// 删除 cache	
+	Dim a,cachePath
+    For Each a In arr
+     	cachePath = "/sdcard/Android/data/" & a
+     	
+        If Dir.Exist(cachePath) = 2 Then 
+        TracePrint cachePath
+        	Dir.Delete(cachePath)
+        End If
+    Next
+    
+    // 删除Download 
+    Dim downPath = "/sdcard/Download" 
+    If Dir.Exist(downPath) = 2 Then 
+    	TracePrint downPath
+    	Dir.Delete(downPath)
+    End If
+    
+    // 删除GDT
+    Dim gdtPath = "/sdcard/GDTDOWNLOAD" 
+    If Dir.Exist(gdtPath) = 2 Then 
+    	TracePrint gdtPath
+    	Dir.Delete(gdtPath)
+    End If
+	
+	// 删除百度
+	Dim bdCache="/sdcard/baidu",dbDown="/sdcard/bddownload"
+	If Dir.Exist(bdCache) = 2 Then 
+    	TracePrint bdCache
+    	Dir.Delete(bdCache)
+    End If
+    
+    If Dir.Exist(dbDown) = 2 Then 
+    	TracePrint dbDown
+    	Dir.Delete(dbDown)
+    End If
+    
+    Dim azCache = "/sdcard/fwmw_az", azDown="/sdcard/a_mob"
+	If Dir.Exist(azCache) = 2 Then 
+    	TracePrint azCache
+    	Dir.Delete(azCache)
+    End If
+    
+    If Dir.Exist(azDown) = 2 Then 
+    	TracePrint azDown
+    	Dir.Delete(azDown)
+    End If
+End Function
+
+
+
