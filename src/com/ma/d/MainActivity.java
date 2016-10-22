@@ -5,13 +5,9 @@ import java.util.Properties;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
-import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.Toast;
@@ -27,8 +23,8 @@ public class MainActivity extends Activity {
 	private static long EXIT_TIME = 0;
 	LinearLayout mainLayout = null;
 
-	// QQ mQQ = null;
-	// BD mBD = null;
+	QQ mQQ = null;
+	BD mBD = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -36,10 +32,10 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		mainLayout = (LinearLayout) findViewById(R.id.main_layout);
 
-		// mQQ = QQ.getInstance(getQQkey(this), getQQb(this), getQQi(this));
-		// mQQ.init(this);
-		// mBD = BD.getInstance(getBDkey(this));
-		// mBD.init(this);
+		mQQ = QQ.getInstance(getQQkey(this), getQQb(this), getQQi(this));
+		mQQ.init(this);
+		mBD = BD.getInstance(getBDkey(this));
+		mBD.init(this);
 
 		initAllLayout();
 
@@ -70,23 +66,23 @@ public class MainActivity extends Activity {
 			layout.setLayoutParams(params);
 			layout.setGravity(Gravity.CENTER);
 			if (i % 2 == 0) {
-				layout.setBackgroundColor(Color.BLACK);
-				// layout.addView(mBD.getBanner(this));
+				// layout.setBackgroundColor(Color.BLACK);
+				layout.addView(mBD.getBanner(this));
 			} else {
-				layout.setBackgroundColor(Color.WHITE);
-				// layout.addView(mQQ.getBanner(this));
+				// layout.setBackgroundColor(Color.WHITE);
+				layout.addView(mQQ.getBanner(this));
 			}
-			layout.setId(i);
-			layout.setOnClickListener(new OnClickListener() {
-
-				@Override
-				public void onClick(View v) {
-					String msg = "click " + v.getId() + " item!";
-					Log.e("test", "click " + v.getId() + " item!");
-					Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT)
-							.show();
-				}
-			});
+			// layout.setId(i);
+			// layout.setOnClickListener(new OnClickListener() {
+			//
+			// @Override
+			// public void onClick(View v) {
+			// String msg = "click " + v.getId() + " item!";
+			// Log.e("test", "click " + v.getId() + " item!");
+			// Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT)
+			// .show();
+			// }
+			// });
 			mainLayout.addView(layout);
 		}
 	}
@@ -97,8 +93,8 @@ public class MainActivity extends Activity {
 				&& event.getAction() == KeyEvent.ACTION_DOWN) {
 			if ((System.currentTimeMillis() - EXIT_TIME) > 2000) {
 				Toast.makeText(this, "Twice Exit!", Toast.LENGTH_SHORT).show();
-				// mQQ.showInterstitial(this);
-				// mBD.showInterstitial(this);
+				mQQ.showInterstitial(this);
+				mBD.showInterstitial(this);
 				EXIT_TIME = System.currentTimeMillis();
 			} else {
 				finish();
@@ -147,7 +143,7 @@ public class MainActivity extends Activity {
 	}
 
 	private String getCount(Context context) {
-		return PropertyUtil.getConfig(context, "count", "5");
+		return PropertyUtil.getConfig(context, "count", "20");
 	}
 
 	public static Properties getProperty(InputStream is) {
