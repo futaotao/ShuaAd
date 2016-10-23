@@ -1,18 +1,13 @@
 package com.ma.d.ad;
 
-import java.util.Locale;
-
 import org.json.JSONObject;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import com.baidu.mobads.AdView;
 import com.baidu.mobads.AdViewListener;
@@ -27,22 +22,26 @@ public class BD implements AdAdapter {
 	public static BD mInstance = null;
 
 	public String bd_key = "";
+	public String bd_banner = "";
+	public String bd_interstitial = "";
 	private SharedPreferences preferences = null;
 
-	public static BD getInstance(String key) {
+	public static BD getInstance(String key, String banner, String intertitial) {
 		try {
 			Class.forName("com.baidu.mobads.BaiduManager");
 		} catch (Exception e) {
 			return null;
 		}
 		if (null == mInstance) {
-			mInstance = new BD(key);
+			mInstance = new BD(key, banner, intertitial);
 		}
 		return mInstance;
 	}
 
-	public BD(String key) {
+	public BD(String key, String banner, String intertitial) {
 		this.bd_key = key;
+		this.bd_banner = banner;
+		this.bd_interstitial = intertitial;
 	}
 
 	@Override
@@ -60,12 +59,12 @@ public class BD implements AdAdapter {
 			return;
 		}
 
-		AdView adView = new AdView(act);
+		AdView adView = new AdView(act, bd_banner);
 		adView.setListener(new AdViewListener() {
 
 			@Override
 			public void onAdSwitch() {
-
+				Log.e(TAG, "switch");
 			}
 
 			@Override
@@ -75,7 +74,7 @@ public class BD implements AdAdapter {
 
 			@Override
 			public void onAdReady(AdView arg0) {
-
+				Log.e(TAG, "ready");
 			}
 
 			@Override
@@ -84,8 +83,15 @@ public class BD implements AdAdapter {
 			}
 
 			@Override
-			public void onAdClick(JSONObject arg0) {
+			public void onAdClose(JSONObject arg0) {
+				Log.e(TAG, "close");
 			}
+
+			@Override
+			public void onAdClick(JSONObject arg0) {
+				Log.e(TAG, "click");
+			}
+
 		});
 
 		RelativeLayout layout = new RelativeLayout(act);
@@ -102,7 +108,7 @@ public class BD implements AdAdapter {
 			return;
 		}
 
-		final InterstitialAd iad = new InterstitialAd(act);
+		final InterstitialAd iad = new InterstitialAd(act, bd_interstitial);
 		iad.setListener(new InterstitialAdListener() {
 
 			@Override
@@ -132,37 +138,6 @@ public class BD implements AdAdapter {
 			}
 		});
 		iad.loadAd();
-	}
-
-	@Override
-	public boolean exit(Activity act, boolean show, int k, KeyEvent e) {
-		if (act == null) {
-			return false;
-		}
-		if (k == KeyEvent.KEYCODE_BACK && e.getAction() == KeyEvent.ACTION_DOWN) {
-			if ((System.currentTimeMillis() - EXIT_TIME) > 2000) {
-				Toast.makeText(act, getExitToast(act), Toast.LENGTH_SHORT)
-						.show();
-				if (show) {
-					showInterstitial(act);
-				}
-				EXIT_TIME = System.currentTimeMillis();
-			} else {
-				act.finish();
-				System.exit(0);
-			}
-			return true;
-		}
-		return false;
-	}
-
-	private String getExitToast(Context context) {
-		Locale locale = context.getResources().getConfiguration().locale;
-		String language = locale.getLanguage();
-		if (language.endsWith("zh"))
-			return "再按一次退出程序";
-		else
-			return "Press again to exit";
 	}
 
 	private static RelativeLayout.LayoutParams getLayoutParams(Activity act,
@@ -212,12 +187,12 @@ public class BD implements AdAdapter {
 
 	@Override
 	public View getBanner(Activity act) {
-		AdView adView = new AdView(act);
+		AdView adView = new AdView(act, bd_banner);
 		adView.setListener(new AdViewListener() {
 
 			@Override
 			public void onAdSwitch() {
-
+				Log.e(TAG, "switch");
 			}
 
 			@Override
@@ -227,7 +202,7 @@ public class BD implements AdAdapter {
 
 			@Override
 			public void onAdReady(AdView arg0) {
-
+				Log.e(TAG, "ready");
 			}
 
 			@Override
@@ -236,8 +211,15 @@ public class BD implements AdAdapter {
 			}
 
 			@Override
-			public void onAdClick(JSONObject arg0) {
+			public void onAdClose(JSONObject arg0) {
+				Log.e(TAG, "close");
 			}
+
+			@Override
+			public void onAdClick(JSONObject arg0) {
+				Log.e(TAG, "click");
+			}
+
 		});
 
 		return adView;
